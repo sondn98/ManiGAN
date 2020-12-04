@@ -149,29 +149,6 @@ class TextDataset(data.Dataset):
         self.class_id = self.load_class_id(split_dir, len(self.filenames))
         self.number_example = len(self.filenames)
 
-    # def load_bbox(self):
-    #     data_dir = self.data_dir
-    #     bbox_path = os.path.join(data_dir, 'bounding_boxes.txt')
-    #     df_bounding_boxes = pd.read_csv(bbox_path,
-    #                                     delim_whitespace=True,
-    #                                     header=None).astype(int)
-    #     #
-    #     filepath = os.path.join(data_dir, 'images.txt')
-    #     df_filenames = \
-    #         pd.read_csv(filepath, delim_whitespace=True, header=None)
-    #     filenames = df_filenames[1].tolist()
-    #     print('Total filenames: ', len(filenames))
-    #     #
-    #     filename_bbox = {img_file[:-4]: [] for img_file in filenames}
-    #     numImgs = len(filenames)
-    #     for i in range(0, numImgs):
-    #         bbox = df_bounding_boxes.iloc[i][1:].tolist()
-    #
-    #         key = filenames[i][:-4]
-    #         filename_bbox[key] = bbox
-    #     #
-    #     return filename_bbox
-
     def load_captions(self, data_dir, filenames):
         all_captions = []
         for i in range(len(filenames)):
@@ -179,7 +156,8 @@ class TextDataset(data.Dataset):
             cap_path = cap_path.replace('.png', '.txt')
             with open(cap_path, "r") as f:
                 captions = f.read().decode('utf-8').split('\n')
-                cnt = 0
+                # cnt = 0
+                sentences = []
                 for cap in captions:
                     if len(cap) == 0:
                         continue
@@ -197,21 +175,23 @@ class TextDataset(data.Dataset):
                         t = t.encode('utf-8', 'strict').decode('utf-8')
                         if len(t) > 0:
                             tokens_new.append(t)
-                    all_captions.append(tokens_new)
-                    cnt += 1
-                    if cnt == self.embeddings_num:
-                        break
-                if cnt < self.embeddings_num:
-                    print('ERROR: the captions for %s less than %d'
-                          % (filenames[i], cnt))
+                    sentences.append(tokens_new)
+                    # cnt += 1
+                    # if cnt == self.embeddings_num:
+                    #     break
+                # if cnt < self.embeddings_num:
+                #     print('ERROR: the captions for %s less than %d'
+                #           % (filenames[i], cnt))
+                all_captions.append(sentences)
         return all_captions
 
     def build_dictionary(self, train_captions, test_captions):
         word_counts = defaultdict(float)
         captions = train_captions + test_captions
-        for sent in captions:
-            for word in sent:
-                word_counts[word] += 1
+        for desc in captions:
+            for sent in desc:
+                for word in sent:
+                    word_counts[word] += 1
 
         vocab = [w for w in word_counts if word_counts[w] >= 0]
 
@@ -226,23 +206,29 @@ class TextDataset(data.Dataset):
             ix += 1
 
         train_captions_new = []
-        for t in train_captions:
-            rev = []
-            for w in t:
-                if w in wordtoix:
-                    rev.append(wordtoix[w])
-            # rev.append(0)  # do not need '<end>' token
-            # this train_captions_new hold index of each word in sentence
-            train_captions_new.append(rev)
+        for train_desc in train_captions:
+            train_desc_new = []
+            for t in train_desc:
+                rev = []
+                for w in t:
+                    if w in wordtoix:
+                        rev.append(wordtoix[w])
+                # rev.append(0)  # do not need '<end>' token
+                # this train_captions_new hold index of each word in sentence
+                train_desc_new.append(rev)
+            train_captions_new.append(train_desc_new)
 
         test_captions_new = []
-        for t in test_captions:
-            rev = []
-            for w in t:
-                if w in wordtoix:
-                    rev.append(wordtoix[w])
-            # rev.append(0)  # do not need '<end>' token
-            test_captions_new.append(rev)
+        for test_desc in test_captions:
+            test_desc_new = []
+            for t in test_desc:
+                rev = []
+                for w in t:
+                    if w in wordtoix:
+                        rev.append(wordtoix[w])
+                # rev.append(0)  # do not need '<end>' token
+                test_desc_new.append(rev)
+            test_captions_new.append(test_desc_new)
 
         return [train_captions_new, test_captions_new,
                 ixtoword, wordtoix, len(ixtoword)]
@@ -298,9 +284,10 @@ class TextDataset(data.Dataset):
             filenames = []
         return filenames
 
-    def get_caption(self, sent_ix):
+    def get_caption(self, cap_idx):
         # a list of indices for a sentence
-        sent_caption = np.asarray(self.captions[sent_ix]).astype('int64')
+        sent_ix = random.randint(0, len(self.captions[cap_idx]))
+        sent_caption = np.asarray(self.captions[cap_idx][sent_ix]).astype('int64')
         # if (sent_caption == 0).sum() > 0:
             # print('ERROR: do not need END (0) token', sent_caption)
         num_words = len(sent_caption)
@@ -338,14 +325,14 @@ class TextDataset(data.Dataset):
         img_name = '%s/VN_CELEB/images/%s' % (self.data_dir, key)
         imgs = get_imgs(img_name, self.imsize, normalize=self.norm)
         # random select a sentence
-        sent_ix = random.randint(0, self.embeddings_num)
-        new_sent_ix = index * self.embeddings_num + sent_ix
-        caps, cap_len = self.get_caption(new_sent_ix)
+        # sent_ix = random.randint(0, self.embeddings_num)
+        # new_sent_ix = index * self.embeddings_num + sent_ix
+        caps, cap_len = self.get_caption(index)
 
         ###
         wrong_idx = random.randint(0, len(self.filenames))
-        wrong_new_sent_ix = wrong_idx * self.embeddings_num + sent_ix
-        wrong_caps, wrong_cap_len = self.get_caption(wrong_new_sent_ix)
+        # wrong_new_sent_ix = wrong_idx * self.embeddings_num + sent_ix
+        wrong_caps, wrong_cap_len = self.get_caption(wrong_idx)
         wrong_cls_id = self.class_id[wrong_idx]
         ###
 
