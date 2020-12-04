@@ -12,6 +12,7 @@ import torch
 import torch.utils.data as data
 from torch.autograd import Variable
 import torchvision.transforms as transforms
+from pyvi import ViTokenizer
 import torchvision.transforms.functional as F
 
 import os
@@ -71,26 +72,42 @@ def prepare_data(data):
             class_ids, keys, wrong_caps, w_sorted_cap_lens, wrong_cls_id]
 
 
-def get_imgs(img_path, imsize, flip, x, y, bbox=None,
-             transform=None, normalize=None):
-    img = Image.open(img_path).convert('RGB')
-    width, height = img.size
-    if bbox is not None:
-        r = int(np.maximum(bbox[2], bbox[3]) * 0.75)
-        center_x = int((2 * bbox[0] + bbox[2]) / 2)
-        center_y = int((2 * bbox[1] + bbox[3]) / 2)
-        y1 = np.maximum(0, center_y - r)
-        y2 = np.minimum(height, center_y + r)
-        x1 = np.maximum(0, center_x - r)
-        x2 = np.minimum(width, center_x + r)
-        img = img.crop([x1, y1, x2, y2])
+# def get_imgs(img_path, imsize, flip, x, y, bbox=None,
+#              transform=None, normalize=None):
+#     img = Image.open(img_path).convert('RGB')
+#     width, height = img.size
+#     if bbox is not None:
+#         r = int(np.maximum(bbox[2], bbox[3]) * 0.75)
+#         center_x = int((2 * bbox[0] + bbox[2]) / 2)
+#         center_y = int((2 * bbox[1] + bbox[3]) / 2)
+#         y1 = np.maximum(0, center_y - r)
+#         y2 = np.minimum(height, center_y + r)
+#         x1 = np.maximum(0, center_x - r)
+#         x2 = np.minimum(width, center_x + r)
+#         img = img.crop([x1, y1, x2, y2])
+#
+#     if transform is not None:
+#         img = transform(img)
+#         ## crop
+#         img = img.crop([x, y, x + 256, y + 256])
+#         if flip:
+#             img = F.hflip(img)
+#
+#     ret = []
+#     if cfg.GAN.B_DCGAN:
+#         ret = [normalize(img)]
+#     else:
+#         for i in range(cfg.TREE.BRANCH_NUM):
+#             if i < (cfg.TREE.BRANCH_NUM - 1):
+#                 re_img = transforms.Scale(imsize[i])(img)
+#             else:
+#                 re_img = img
+#             ret.append(normalize(re_img))
+#
+#     return ret
 
-    if transform is not None:
-        img = transform(img)
-        ## crop
-        img = img.crop([x, y, x + 256, y + 256])
-        if flip:
-            img = F.hflip(img)
+def get_imgs(img_path, imsize, normalize=None):
+    img = Image.open(img_path).convert('RGB')
 
     ret = []
     if cfg.GAN.B_DCGAN:
@@ -110,7 +127,7 @@ class TextDataset(data.Dataset):
     def __init__(self, data_dir, split='train',
                  base_size=64,
                  transform=None, target_transform=None):
-        self.transform = transform
+        # self.transform = transform
         self.norm = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
@@ -124,10 +141,6 @@ class TextDataset(data.Dataset):
 
         self.data = []
         self.data_dir = data_dir
-        if data_dir.find('birds') != -1:
-            self.bbox = self.load_bbox()
-        else:
-            self.bbox = None
         split_dir = os.path.join(data_dir, split)
 
         self.filenames, self.captions, self.ixtoword, \
@@ -136,35 +149,36 @@ class TextDataset(data.Dataset):
         self.class_id = self.load_class_id(split_dir, len(self.filenames))
         self.number_example = len(self.filenames)
 
-    def load_bbox(self):
-        data_dir = self.data_dir
-        bbox_path = os.path.join(data_dir, 'bounding_boxes.txt')
-        df_bounding_boxes = pd.read_csv(bbox_path,
-                                        delim_whitespace=True,
-                                        header=None).astype(int)
-        #
-        filepath = os.path.join(data_dir, 'images.txt')
-        df_filenames = \
-            pd.read_csv(filepath, delim_whitespace=True, header=None)
-        filenames = df_filenames[1].tolist()
-        print('Total filenames: ', len(filenames))
-        #
-        filename_bbox = {img_file[:-4]: [] for img_file in filenames}
-        numImgs = len(filenames)
-        for i in range(0, numImgs):
-            bbox = df_bounding_boxes.iloc[i][1:].tolist()
-
-            key = filenames[i][:-4]
-            filename_bbox[key] = bbox
-        #
-        return filename_bbox
+    # def load_bbox(self):
+    #     data_dir = self.data_dir
+    #     bbox_path = os.path.join(data_dir, 'bounding_boxes.txt')
+    #     df_bounding_boxes = pd.read_csv(bbox_path,
+    #                                     delim_whitespace=True,
+    #                                     header=None).astype(int)
+    #     #
+    #     filepath = os.path.join(data_dir, 'images.txt')
+    #     df_filenames = \
+    #         pd.read_csv(filepath, delim_whitespace=True, header=None)
+    #     filenames = df_filenames[1].tolist()
+    #     print('Total filenames: ', len(filenames))
+    #     #
+    #     filename_bbox = {img_file[:-4]: [] for img_file in filenames}
+    #     numImgs = len(filenames)
+    #     for i in range(0, numImgs):
+    #         bbox = df_bounding_boxes.iloc[i][1:].tolist()
+    #
+    #         key = filenames[i][:-4]
+    #         filename_bbox[key] = bbox
+    #     #
+    #     return filename_bbox
 
     def load_captions(self, data_dir, filenames):
         all_captions = []
         for i in range(len(filenames)):
-            cap_path = '%s/text/%s.txt' % (data_dir, filenames[i])
+            cap_path = '%s/text/%s' % (data_dir, filenames[i])
+            cap_path = cap_path.replace('.png', '.txt')
             with open(cap_path, "r") as f:
-                captions = f.read().split('\n')
+                captions = f.read().decode('utf-8').split('\n')
                 cnt = 0
                 for cap in captions:
                     if len(cap) == 0:
@@ -172,8 +186,7 @@ class TextDataset(data.Dataset):
                     cap = cap.replace("\ufffd\ufffd", " ")
                     # picks out sequences of alphanumeric characters as tokens
                     # and drops everything else
-                    tokenizer = RegexpTokenizer(r'\w+')
-                    tokens = tokenizer.tokenize(cap.lower())
+                    tokens = ViTokenizer.tokenize(cap.lower())
 
                     if len(tokens) == 0:
                         print('cap', cap)
@@ -181,7 +194,7 @@ class TextDataset(data.Dataset):
 
                     tokens_new = []
                     for t in tokens:
-                        t = t.encode('ascii', 'ignore').decode('ascii')
+                        t = t.encode('utf-8', 'strict').decode('utf-8')
                         if len(t) > 0:
                             tokens_new.append(t)
                     all_captions.append(tokens_new)
@@ -235,7 +248,7 @@ class TextDataset(data.Dataset):
                 ixtoword, wordtoix, len(ixtoword)]
 
     def load_text_data(self, data_dir, split):
-        filepath = os.path.join(data_dir, 'bird_captions.pickle')
+        filepath = os.path.join(data_dir, 'face_captions.pickle')
         train_names = self.load_filenames(data_dir, 'train')
         test_names = self.load_filenames(data_dir, 'test')
         if not os.path.isfile(filepath):
@@ -270,7 +283,7 @@ class TextDataset(data.Dataset):
     def load_class_id(self, data_dir, total_num):
         if os.path.isfile(data_dir + '/class_info.pickle'):
             with open(data_dir + '/class_info.pickle', 'rb') as f:
-                class_id = pickle.load(f, encoding='latin1')
+                class_id = pickle.load(f) #, encoding='latin1'
         else:
             class_id = np.arange(total_num)
         return class_id
@@ -306,27 +319,24 @@ class TextDataset(data.Dataset):
         return x, x_len
 
     def __getitem__(self, index):
-
-        #
         key = self.filenames[index]
         cls_id = self.class_id[index]
         #
-        if self.bbox is not None:
-            bbox = self.bbox[key]
-            data_dir = self.data_dir
-        else:
-            bbox = None
-            data_dir = self.data_dir
+        # if self.bbox is not None:
+        #     bbox = self.bbox[key]
+        #     data_dir = self.data_dir
+        # else:
+        #     bbox = None
+        #     data_dir = self.data_dir
 
-        flip = random.rand() > 0.5
+        # flip = random.rand() > 0.5
 
-        new_w = new_h = int(256 * 76 / 64)
-        x = random.randint(0, np.maximum(0, new_w - 256))
-        y = random.randint(0, np.maximum(0, new_h - 256))
+        # new_w = new_h = int(256 * 76 / 64)
+        # x = random.randint(0, np.maximum(0, new_w - 256))
+        # y = random.randint(0, np.maximum(0, new_h - 256))
 
-        img_name = '%s/images/%s.jpg' % (data_dir, key)
-        imgs = get_imgs(img_name, self.imsize, flip, x, y,
-                        bbox, self.transform, normalize=self.norm)
+        img_name = '%s/VN_CELEB/images/%s' % (self.data_dir, key)
+        imgs = get_imgs(img_name, self.imsize, normalize=self.norm)
         # random select a sentence
         sent_ix = random.randint(0, self.embeddings_num)
         new_sent_ix = index * self.embeddings_num + sent_ix

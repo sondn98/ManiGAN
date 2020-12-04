@@ -7,6 +7,7 @@ from src.miscc.config import cfg, cfg_from_file
 
 from src.datasets import TextDataset
 from src.datasets import prepare_data
+from tqdm import tqdm
 
 from src.model import RNN_ENCODER, CNN_ENCODER
 
@@ -38,7 +39,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Train a DAMSM network')
     parser.add_argument('--cfg', dest='cfg_file',
                         help='optional config file',
-                        default='/home/sondn/DIY/ManiGAN/src/cfg/DAMSM/bird.yml', type=str)
+                        default='/home/sondn/DIY/ManiGAN/src/cfg/DAMSM/vnceleb.yml', type=str)
     parser.add_argument('--gpu', dest='gpu_id', type=int, default=0)
     parser.add_argument('--data_dir', dest='data_dir', type=str, default='')
     parser.add_argument('--manualSeed', type=int, help='manual seed')
@@ -262,7 +263,7 @@ if __name__ == "__main__":
 
     try:
         lr = cfg.TRAIN.ENCODER_LR
-        for epoch in range(start_epoch, cfg.TRAIN.MAX_EPOCH):
+        for epoch in tqdm(range(start_epoch, cfg.TRAIN.MAX_EPOCH)):
             optimizer = optim.Adam(para, lr=lr, betas=(0.5, 0.999))
             epoch_start_time = time.time()
             count = train(dataloader, image_encoder, text_encoder,

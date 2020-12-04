@@ -5,7 +5,6 @@ DATA_DIR: '../data/coco'
 GPU_ID: '0'
 WORKERS: 1
 
-
 TREE:
     BRANCH_NUM: 1
     BASE_SIZE: 299
