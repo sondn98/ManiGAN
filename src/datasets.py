@@ -186,7 +186,7 @@ class TextDataset(data.Dataset):
                     cap = cap.replace("\ufffd\ufffd", " ")
                     # picks out sequences of alphanumeric characters as tokens
                     # and drops everything else
-                    tokens = ViTokenizer.tokenize(cap.lower())
+                    tokens = ViTokenizer.tokenize(cap.lower()).split(' ')
 
                     if len(tokens) == 0:
                         print('cap', cap)
