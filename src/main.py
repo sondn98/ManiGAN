@@ -1,8 +1,8 @@
 from __future__ import print_function
 
-from miscc.config import cfg, cfg_from_file
-from datasets import TextDataset
-from trainerDCM import condGANTrainer as trainer
+from src.miscc.config import cfg, cfg_from_file
+from src.datasets import TextDataset
+from src.trainer import condGANTrainer as trainer
 
 import os
 import sys
@@ -18,7 +18,7 @@ import torchvision.transforms as transforms
 import torchvision.transforms.functional as F
 from PIL import Image
 from torch.autograd import Variable
-import numpy.random as random
+import numpy.random as rd
 
 dir_path = (os.path.abspath(os.path.join(os.path.realpath(__file__), './.')))
 sys.path.append(dir_path)
@@ -28,12 +28,13 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Train a main module of the ManiGAN network')
     parser.add_argument('--cfg', dest='cfg_file',
                         help='optional config file',
-                        default='cfg/train_bird.yml', type=str)
+                        default='cfg/DAMSM/bird.yml', type=str)
     parser.add_argument('--gpu', dest='gpu_id', type=int, default=-1)
     parser.add_argument('--data_dir', dest='data_dir', type=str, default='')
     parser.add_argument('--manualSeed', type=int, help='manual seed')
     args = parser.parse_args()
     return args
+
 
 def get_imgs(img_path, imsize, flip, x, y, bbox=None,
              transform=None, normalize=None):
@@ -69,6 +70,7 @@ def get_imgs(img_path, imsize, flip, x, y, bbox=None,
 
     return ret
 
+
 def gen_example(wordtoix, algo, imsize, image_transform, norm, data_dir):
     '''generate images from example sentences'''
     from nltk.tokenize import RegexpTokenizer
@@ -80,10 +82,10 @@ def gen_example(wordtoix, algo, imsize, image_transform, norm, data_dir):
             if len(name) == 0:
                 continue
 
-            flip = random.rand() > 0.5
+            flip = rd.rand() > 0.5
             new_w = new_h = int(256 * 76 / 64)
-            x = random.randint(0, np.maximum(0, new_w - 256))
-            y = random.randint(0, np.maximum(0, new_h - 256))
+            x = rd.randint(0, np.maximum(0, new_w - 256))
+            y = rd.randint(0, np.maximum(0, new_h - 256))
 
             img_name = name.replace("text", "images")
             img_path = '%s/%s.jpg' % (data_dir, img_name)
@@ -155,7 +157,7 @@ if __name__ == "__main__":
     if not cfg.TRAIN.FLAG:
         args.manualSeed = 100
     elif args.manualSeed is None:
-        args.manualSeed = random.randint(1, 10000)
+        args.manualSeed = rd.randint(1, 10000)
     random.seed(args.manualSeed)
     np.random.seed(args.manualSeed)
     torch.manual_seed(args.manualSeed)
@@ -180,7 +182,7 @@ if __name__ == "__main__":
     dataset = TextDataset(cfg.DATA_DIR, split_dir,
                           base_size=cfg.TREE.BASE_SIZE,
                           transform=image_transform)
-    assert dataset
+    # assert dataset
     dataloader = torch.utils.data.DataLoader(
         dataset, batch_size=cfg.TRAIN.BATCH_SIZE,
         drop_last=True, shuffle=bshuffle, num_workers=int(cfg.WORKERS))

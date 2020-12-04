@@ -9,17 +9,17 @@ import torch.backends.cudnn as cudnn
 
 from PIL import Image
 
-from miscc.config import cfg
-from miscc.utils import mkdir_p
-from miscc.utils import build_super_images, build_super_images2
-from miscc.utils import weights_init, load_params, copy_G_params
-from model import G_DCGAN, G_NET, DCM_Net
-from datasets import prepare_data
-from model import RNN_ENCODER, CNN_ENCODER
-from VGGFeatureLoss import VGGNet
+from src.miscc.config import cfg
+from src.miscc.utils import mkdir_p
+from src.miscc.utils import build_super_images, build_super_images2
+from src.miscc.utils import weights_init, load_params, copy_G_params
+from src.model import G_DCGAN, G_NET, DCM_Net
+from src.datasets import prepare_data
+from src.model import RNN_ENCODER, CNN_ENCODER
+from src.VGGFeatureLoss import VGGNet
 
-from miscc.lossesDCM import words_loss
-from miscc.lossesDCM import discriminator_loss, DCM_generator_loss
+from src.miscc.lossesDCM import words_loss
+from src.miscc.lossesDCM import discriminator_loss, DCM_generator_loss
 
 import os
 import time
@@ -86,10 +86,10 @@ class condGANTrainer(object):
 
         if cfg.GAN.B_DCGAN:
             netG = G_DCGAN()
-            from model import D_NET256 as D_NET
+            from src.model import D_NET256 as D_NET
             netD = D_NET(b_jcu=False)
         else:
-            from model import D_NET256
+            from src.model import D_NET256
             netG = G_NET()
             netD = D_NET256()
 

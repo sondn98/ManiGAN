@@ -9,17 +9,17 @@ import torch.backends.cudnn as cudnn
 
 from PIL import Image
 
-from miscc.config import cfg
-from miscc.utils import mkdir_p
-from miscc.utils import build_super_images, build_super_images2
-from miscc.utils import weights_init, load_params, copy_G_params
-from model import G_DCGAN, G_NET, DCM_Net
-from datasets import prepare_data
-from model import RNN_ENCODER, CNN_ENCODER
-from VGGFeatureLoss import VGGNet
+from src.miscc.config import cfg
+from src.miscc.utils import mkdir_p
+from src.miscc.utils import build_super_images, build_super_images2
+from src.miscc.utils import weights_init, load_params, copy_G_params
+from src.model import G_DCGAN, G_NET, DCM_Net
+from src.datasets import prepare_data
+from src.model import RNN_ENCODER, CNN_ENCODER
+from src.VGGFeatureLoss import VGGNet
 
-from miscc.losses import words_loss
-from miscc.losses import discriminator_loss, generator_loss, KL_loss
+from src.miscc.losses import words_loss
+from src.miscc.losses import discriminator_loss, generator_loss, KL_loss
 
 import os
 import time
@@ -34,7 +34,7 @@ class condGANTrainer(object):
             mkdir_p(self.model_dir)
             mkdir_p(self.image_dir)
 
-        torch.cuda.set_device(cfg.GPU_ID)
+        torch.cuda.set_device(int(cfg.GPU_ID))
         cudnn.benchmark = True
 
         self.batch_size = cfg.TRAIN.BATCH_SIZE
@@ -85,15 +85,15 @@ class condGANTrainer(object):
         netsD = []
         if cfg.GAN.B_DCGAN:
             if cfg.TREE.BRANCH_NUM ==1:
-                from model import D_NET64 as D_NET
+                from src.model import D_NET64 as D_NET
             elif cfg.TREE.BRANCH_NUM == 2:
-                from model import D_NET128 as D_NET
+                from src.model import D_NET128 as D_NET
             else:  # cfg.TREE.BRANCH_NUM == 3:
-                from model import D_NET256 as D_NET
+                from src.model import D_NET256 as D_NET
             netG = G_DCGAN()
             netsD = [D_NET(b_jcu=False)]
         else:
-            from model import D_NET64, D_NET128, D_NET256
+            from src.model import D_NET64, D_NET128, D_NET256
             netG = G_NET()
             if cfg.TREE.BRANCH_NUM > 0:
                 netsD.append(D_NET64())

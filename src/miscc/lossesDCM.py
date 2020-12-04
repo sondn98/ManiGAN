@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 
 import numpy as np
-from miscc.config import cfg
+from src.miscc.config import cfg
 
-from attention import func_attention
+from src.attention import func_attention
 import torch.nn.functional as F
 import torchvision.models as models
 from torch.autograd import Variable

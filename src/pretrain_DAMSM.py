@@ -1,14 +1,14 @@
 from __future__ import print_function
 
-from miscc.utils import mkdir_p
-from miscc.utils import build_super_images
-from miscc.losses import sent_loss, words_loss
-from miscc.config import cfg, cfg_from_file
+from src.miscc.utils import mkdir_p
+from src.miscc.utils import build_super_images
+from src.miscc.losses import sent_loss, words_loss
+from src.miscc.config import cfg, cfg_from_file
 
-from datasets import TextDataset
-from datasets import prepare_data
+from src.datasets import TextDataset
+from src.datasets import prepare_data
 
-from model import RNN_ENCODER, CNN_ENCODER
+from src.model import RNN_ENCODER, CNN_ENCODER
 
 import os
 import sys
@@ -38,7 +38,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Train a DAMSM network')
     parser.add_argument('--cfg', dest='cfg_file',
                         help='optional config file',
-                        default='cfg/DAMSM/bird.yml', type=str)
+                        default='/home/sondn/DIY/ManiGAN/src/cfg/DAMSM/bird.yml', type=str)
     parser.add_argument('--gpu', dest='gpu_id', type=int, default=0)
     parser.add_argument('--data_dir', dest='data_dir', type=str, default='')
     parser.add_argument('--manualSeed', type=int, help='manual seed')

@@ -1,10 +1,9 @@
 CONFIG_NAME: 'DAMSM'
 
 DATASET_NAME: 'birds'
-DATA_DIR: '../data/birds'
+DATA_DIR: '/usr/local/data/images/birds/CUB_200_2011'
 GPU_ID: '0'
 WORKERS: 1
-
 
 TREE:
     BRANCH_NUM: 1
@@ -14,7 +13,7 @@ TREE:
 TRAIN:
     FLAG: True
     NET_E: ''  
-    BATCH_SIZE: 24
+    BATCH_SIZE: 16
     MAX_EPOCH: 600
     SNAPSHOT_INTERVAL: 5
     ENCODER_LR: 0.002  

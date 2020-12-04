@@ -8,10 +8,10 @@ import torch.nn.functional as F
 
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
-from miscc.config import cfg
-from attention import SpatialAttentionGeneral as SPATIAL_ATT
-from attention import ChannelAttention as CHANNEL_ATT
-from attention import DCMChannelAttention as DCM_CHANNEL_ATT
+from src.miscc.config import cfg
+from src.attention import SpatialAttentionGeneral as SPATIAL_ATT
+from src.attention import ChannelAttention as CHANNEL_ATT
+from src.attention import DCMChannelAttention as DCM_CHANNEL_ATT
 
 class GLU(nn.Module):
     def __init__(self):

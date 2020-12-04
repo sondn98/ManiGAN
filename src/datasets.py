@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 
 from nltk.tokenize import RegexpTokenizer
 from collections import defaultdict
-from miscc.config import cfg
+from src.miscc.config import cfg
 
 import torch
 import torch.utils.data as data
@@ -138,12 +138,12 @@ class TextDataset(data.Dataset):
 
     def load_bbox(self):
         data_dir = self.data_dir
-        bbox_path = os.path.join(data_dir, 'CUB_200_2011/bounding_boxes.txt')
+        bbox_path = os.path.join(data_dir, 'bounding_boxes.txt')
         df_bounding_boxes = pd.read_csv(bbox_path,
                                         delim_whitespace=True,
                                         header=None).astype(int)
         #
-        filepath = os.path.join(data_dir, 'CUB_200_2011/images.txt')
+        filepath = os.path.join(data_dir, 'images.txt')
         df_filenames = \
             pd.read_csv(filepath, delim_whitespace=True, header=None)
         filenames = df_filenames[1].tolist()
@@ -235,7 +235,7 @@ class TextDataset(data.Dataset):
                 ixtoword, wordtoix, len(ixtoword)]
 
     def load_text_data(self, data_dir, split):
-        filepath = os.path.join(data_dir, 'captions.pickle')
+        filepath = os.path.join(data_dir, 'bird_captions.pickle')
         train_names = self.load_filenames(data_dir, 'train')
         test_names = self.load_filenames(data_dir, 'test')
         if not os.path.isfile(filepath):
@@ -288,8 +288,8 @@ class TextDataset(data.Dataset):
     def get_caption(self, sent_ix):
         # a list of indices for a sentence
         sent_caption = np.asarray(self.captions[sent_ix]).astype('int64')
-        if (sent_caption == 0).sum() > 0:
-            print('ERROR: do not need END (0) token', sent_caption)
+        # if (sent_caption == 0).sum() > 0:
+            # print('ERROR: do not need END (0) token', sent_caption)
         num_words = len(sent_caption)
         # pad with 0s (i.e., '<end>')
         x = np.zeros((cfg.TEXT.WORDS_NUM, 1), dtype='int64')
@@ -313,7 +313,7 @@ class TextDataset(data.Dataset):
         #
         if self.bbox is not None:
             bbox = self.bbox[key]
-            data_dir = '%s/CUB_200_2011' % self.data_dir
+            data_dir = self.data_dir
         else:
             bbox = None
             data_dir = self.data_dir

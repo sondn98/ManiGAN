@@ -10,7 +10,7 @@ from PIL import Image, ImageDraw, ImageFont
 from copy import deepcopy
 import skimage.transform
 
-from miscc.config import cfg
+from src.miscc.config import cfg
 
 
 # For visualization ################################################
@@ -122,6 +122,8 @@ def build_super_images(real_imgs, captions, ixtoword,
         row_merge = [img, middle_pad]
         row_beforeNorm = []
         minVglobal, maxVglobal = 1, 0
+
+        print(attn[0].shape)
         for j in range(num_attn):
             one_map = attn[j]
             if (vis_size // att_sze) > 1:
@@ -141,7 +143,9 @@ def build_super_images(real_imgs, captions, ixtoword,
                 one_map = (one_map - minVglobal) / (maxVglobal - minVglobal)
                 one_map *= 255
                 #
+                print(img.shape)
                 PIL_im = Image.fromarray(np.uint8(img))
+                print(one_map.shape)
                 PIL_att = Image.fromarray(np.uint8(one_map))
                 merged = \
                     Image.new('RGBA', (vis_size, vis_size), (0, 0, 0, 0))
