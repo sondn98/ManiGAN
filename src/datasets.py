@@ -164,7 +164,7 @@ class TextDataset(data.Dataset):
         for i in range(len(filenames)):
             cap_path = '%s/text/%s.txt' % (data_dir, filenames[i])
             with open(cap_path, "r") as f:
-                captions = f.read().split('\n')
+                captions = f.read().decode('latin').split('\n')
                 cnt = 0
                 for cap in captions:
                     if len(cap) == 0:
@@ -270,7 +270,7 @@ class TextDataset(data.Dataset):
     def load_class_id(self, data_dir, total_num):
         if os.path.isfile(data_dir + '/class_info.pickle'):
             with open(data_dir + '/class_info.pickle', 'rb') as f:
-                class_id = pickle.load(f, encoding='latin1')
+                class_id = pickle.load(f) #, encoding='latin1'
         else:
             class_id = np.arange(total_num)
         return class_id
