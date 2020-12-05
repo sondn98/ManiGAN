@@ -98,7 +98,7 @@ class ResBlock(nn.Module):
 class RNN_ENCODER(nn.Module):
     def __init__(self, ntoken, ninput=300, drop_prob=0.5,
                  nhidden=128, nlayers=1, bidirectional=True):
-        print('Entry point for RNN_ENCODER')
+        # print('Entry point for RNN_ENCODER')
         super(RNN_ENCODER, self).__init__()
         self.n_steps = cfg.TEXT.WORDS_NUM
         self.ntoken = ntoken                # size of the dictionary
@@ -118,7 +118,7 @@ class RNN_ENCODER(nn.Module):
         self.init_weights()
 
     def define_module(self):
-        print('Define module RNN')
+        # print('Define module RNN')
         self.encoder = nn.Embedding(self.ntoken, self.ninput)
         self.drop = nn.Dropout(self.drop_prob)
         if self.rnn_type == 'LSTM':
@@ -160,27 +160,26 @@ class RNN_ENCODER(nn.Module):
         # --> emb: batch x n_steps x ninput
         ## drop: random zero
         # 48 18 300
-        print("============================ RNN ============================")
+        # print("============================ RNN ============================")
         emb = self.drop(self.encoder(captions))
-        print('Emb shape: ', emb.shape)
+        # print('Emb shape: ', emb.shape)
         #
         # Returns: a PackedSequence object
         cap_lens = cap_lens.data.tolist()
 
         emb = pack_padded_sequence(emb, cap_lens, batch_first=True)
-        print('Emb shape: ', emb.shape)
         # #hidden and memory (num_layers * num_directions, batch, hidden_size):
         # tensor containing the initial hidden state for each element in batch.
         # #output (batch, seq_len, hidden_size * num_directions)
         # #or a PackedSequence object:
         # tensor containing output features (h_t) from the last layer of RNN
         output, hidden = self.rnn(emb, hidden)
-        print('Output shape: ', output.shape)
-        print('Hidden shape: ', hidden.shape)
+        # print('Output shape: ', output.shape)
+        # print('Hidden shape: ', hidden.shape)
         # PackedSequence object
         # --> (batch, seq_len, hidden_size * num_directions)
         output = pad_packed_sequence(output, batch_first=True)[0]
-        print('Output shape: ', output.shape)
+        # print('Output shape: ', output.shape)
         # output = self.drop(output)
         # --> batch x hidden_size*num_directions x seq_len
         words_emb = output.transpose(1, 2)
@@ -195,7 +194,7 @@ class RNN_ENCODER(nn.Module):
 # The image encoder (Inception_v3)
 class CNN_ENCODER(nn.Module):
     def __init__(self, nef):
-        print('Entry point for CNN_ENCODER')
+        # print('Entry point for CNN_ENCODER')
         super(CNN_ENCODER, self).__init__()
         if cfg.TRAIN.FLAG:
             self.nef = nef
@@ -207,14 +206,14 @@ class CNN_ENCODER(nn.Module):
         model.load_state_dict(model_zoo.load_url(url))
         for param in model.parameters():
             param.requires_grad = False
-        print('Load pretrained model from ', url)
+        # print('Load pretrained model from ', url)
 
         self.define_module(model)
         self.init_trainable_weights()
-        print('Finish entry point for CNN_ENCODER')
+        # print('Finish entry point for CNN_ENCODER')
 
     def define_module(self, model):
-        print('Define module CNN')
+        # print('Define module CNN')
         self.Conv2d_1a_3x3 = model.Conv2d_1a_3x3
         self.Conv2d_2a_3x3 = model.Conv2d_2a_3x3
         self.Conv2d_2b_3x3 = model.Conv2d_2b_3x3
@@ -247,57 +246,57 @@ class CNN_ENCODER(nn.Module):
 
         features = None
         # --> fixed-size input: batch x 3 x 299 x 299
-        print('===================================== CNN ==========================================')
-        print('X shape: ', x.shape)
+        # print('===================================== CNN ==========================================')
+        # print('X shape: ', x.shape)
         x = nn.Upsample(size=(299, 299), mode='bilinear')(x)
-        print('X shape: ', x.shape)
+        # print('X shape: ', x.shape)
         # 299 x 299 x 3
         x = self.Conv2d_1a_3x3(x)
-        print('X shape: ', x.shape)
+        # print('X shape: ', x.shape)
         # 149 x 149 x 32
         x = self.Conv2d_2a_3x3(x)
-        print('X shape: ', x.shape)
+        # print('X shape: ', x.shape)
         # 147 x 147 x 32
         x = self.Conv2d_2b_3x3(x)
-        print('X shape: ', x.shape)
+        # print('X shape: ', x.shape)
         # 147 x 147 x 64
         x = F.max_pool2d(x, kernel_size=3, stride=2)
-        print('X shape: ', x.shape)
+        # print('X shape: ', x.shape)
         # 73 x 73 x 64
         x = self.Conv2d_3b_1x1(x)
-        print('X shape: ', x.shape)
+        # print('X shape: ', x.shape)
         # 73 x 73 x 80
         x = self.Conv2d_4a_3x3(x)
-        print('X shape: ', x.shape)
+        # print('X shape: ', x.shape)
         # 71 x 71 x 192
 
         x = F.max_pool2d(x, kernel_size=3, stride=2)
-        print('X shape: ', x.shape)
+        # print('X shape: ', x.shape)
         # 35 x 35 x 192
         x = self.Mixed_5b(x)
-        print('X shape: ', x.shape)
+        # print('X shape: ', x.shape)
         # 35 x 35 x 256
         x = self.Mixed_5c(x)
-        print('X shape: ', x.shape)
+        # print('X shape: ', x.shape)
         # 35 x 35 x 288
         x = self.Mixed_5d(x)
-        print('X shape: ', x.shape)
+        # print('X shape: ', x.shape)
         # 35 x 35 x 288
 
         x = self.Mixed_6a(x)
-        print('X shape: ', x.shape)
+        # print('X shape: ', x.shape)
         # 17 x 17 x 768
         x = self.Mixed_6b(x)
-        print('X shape: ', x.shape)
+        # print('X shape: ', x.shape)
         # 17 x 17 x 768
         x = self.Mixed_6c(x)
-        print('X shape: ', x.shape)
+        # print('X shape: ', x.shape)
         # 17 x 17 x 768
         x = self.Mixed_6d(x)
-        print('X shape: ', x.shape)
+        # print('X shape: ', x.shape)
         # 17 x 17 x 768
         x = self.Mixed_6e(x)
-        print('X shape: ', x.shape)
+        # print('X shape: ', x.shape)
         # 17 x 17 x 768
 
         # image region features

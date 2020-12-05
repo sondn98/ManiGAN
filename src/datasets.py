@@ -108,6 +108,7 @@ def prepare_data(data):
 
 def get_imgs(img_path, imsize, normalize=None):
     img = Image.open(img_path).convert('RGB')
+    img = img.resize((256, 256), Image.BILINEAR)
 
     ret = []
     if cfg.GAN.B_DCGAN:
