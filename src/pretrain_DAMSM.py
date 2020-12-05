@@ -50,7 +50,9 @@ def parse_args():
 def train(dataloader, cnn_model, rnn_model, batch_size,
           labels, optimizer, epoch, ixtoword, image_dir):
     cnn_model.train()
+    print('cnn_model training')
     rnn_model.train()
+    print('rnn_model training')
     s_total_loss0 = 0
     s_total_loss1 = 0
     w_total_loss0 = 0
@@ -59,7 +61,9 @@ def train(dataloader, cnn_model, rnn_model, batch_size,
     start_time = time.time()
     for step, data in enumerate(dataloader, 0):
         rnn_model.zero_grad()
+        print('rnn_model zero_grad')
         cnn_model.zero_grad()
+        print('cnn_model zero_grad')
 
         imgs, captions, cap_lens, class_ids, keys, wrong_caps, \
                                 wrong_caps_len, wrong_cls_id = prepare_data(data)
