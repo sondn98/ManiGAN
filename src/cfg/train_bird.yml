@@ -1,8 +1,8 @@
 CONFIG_NAME: 'ManiGAN'
 
 DATASET_NAME: 'birds'
-DATA_DIR: '../data/birds'
-GPU_ID: '2'
+DATA_DIR: '/usr/local/data/images/birds/CUB_200_2011'
+GPU_ID: '0'
 WORKERS: 4
 
 
