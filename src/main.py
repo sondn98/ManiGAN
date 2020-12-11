@@ -28,7 +28,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Train a main module of the ManiGAN network')
     parser.add_argument('--cfg', dest='cfg_file',
                         help='optional config file',
-                        default='cfg/DAMSM/bird.yml', type=str)
+                        default='cfg/eval_vnceleb.yml', type=str)
     parser.add_argument('--gpu', dest='gpu_id', type=int, default=-1)
     parser.add_argument('--data_dir', dest='data_dir', type=str, default='')
     parser.add_argument('--manualSeed', type=int, help='manual seed')
@@ -88,7 +88,7 @@ def gen_example(wordtoix, algo, imsize, image_transform, norm, data_dir):
             y = rd.randint(0, np.maximum(0, new_h - 256))
 
             img_name = name.replace("text", "images")
-            img_path = '%s/%s.jpg' % (data_dir, img_name)
+            img_path = '%s/%s.png' % (data_dir, img_name)
             imgs = get_imgs(img_path, imsize, flip, x, y,
                         None, image_transform, norm)
 
@@ -118,7 +118,7 @@ def gen_example(wordtoix, algo, imsize, image_transform, norm, data_dir):
 
                     rev = []
                     for t in tokens:
-                        t = t.encode('ascii', 'ignore').decode('ascii')
+                        t = t.encode('latin1', 'strict').decode('latin1')
                         if len(t) > 0 and t in wordtoix:
                             rev.append(wordtoix[t])
                     captions.append(rev)

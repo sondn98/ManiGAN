@@ -1,0 +1,31 @@
+CONFIG_NAME: 'ManiGAN'
+
+DATASET_NAME: 'vnceleb'
+DATA_DIR: '/usr/local/data/images/faces/Processed-VN_Celeb/VN_CELEB'
+GPU_ID: '0'
+WORKERS: 1
+
+B_VALIDATION: False
+TREE:
+    BRANCH_NUM: 3
+
+
+TRAIN:
+    FLAG: False
+    NET_G: '../models/netG_epoch_160.pth'
+    NET_C: '../models/bird_DCM.pth'
+    B_NET_D: False
+    BATCH_SIZE: 2
+    NET_E: '../DAMSMencoders/vnceleb/text_encoder595.pth'
+
+
+GAN:
+    DF_DIM: 64
+    GF_DIM: 32
+    Z_DIM: 100
+    R_NUM: 2
+
+TEXT:
+    EMBEDDING_DIM: 256
+    CAPTIONS_PER_IMAGE: 10
+    WORDS_NUM: 25
