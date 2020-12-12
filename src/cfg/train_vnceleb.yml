@@ -1,7 +1,7 @@
 CONFIG_NAME: 'ManiGAN'
 
 DATASET_NAME: 'vnceleb'
-DATA_DIR: '/usr/local/data/images/birds'
+DATA_DIR: '/usr/local/data/images/faces/Processed-VN_Celeb/VN_CELEB'
 GPU_ID: '0'
 WORKERS: 4
 

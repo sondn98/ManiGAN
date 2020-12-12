@@ -12,6 +12,7 @@ import pprint
 import datetime
 import dateutil.tz
 import argparse
+from pyvi import ViTokenizer
 import numpy as np
 import torch
 import torchvision.transforms as transforms
@@ -28,7 +29,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Train a main module of the ManiGAN network')
     parser.add_argument('--cfg', dest='cfg_file',
                         help='optional config file',
-                        default='cfg/eval_vnceleb.yml', type=str)
+                        default='cfg/train_vnceleb.yml', type=str)
     parser.add_argument('--gpu', dest='gpu_id', type=int, default=-1)
     parser.add_argument('--data_dir', dest='data_dir', type=str, default='')
     parser.add_argument('--manualSeed', type=int, help='manual seed')
@@ -102,7 +103,7 @@ def gen_example(wordtoix, algo, imsize, image_transform, norm, data_dir):
             filepath = '%s/%s.txt' % (cfg.DATA_DIR, name)
             with open(filepath, "r") as f:
                 print('Load from:', name)
-                sentences = f.read().split('\n')
+                sentences = f.read().decode('utf-8').split('\n')
                 # a list of indices for a sentence
                 captions = []
                 cap_lens = []
@@ -110,15 +111,16 @@ def gen_example(wordtoix, algo, imsize, image_transform, norm, data_dir):
                     if len(sent) == 0:
                         continue
                     sent = sent.replace("\ufffd\ufffd", " ")
-                    tokenizer = RegexpTokenizer(r'\w+')
-                    tokens = tokenizer.tokenize(sent.lower())
+                    # tokenizer = RegexpTokenizer(r'\w+')
+                    # tokens = tokenizer.tokenize(sent.lower())
+                    tokens = ViTokenizer.tokenize(sent).split(' ')
                     if len(tokens) == 0:
                         print('sent', sent)
                         continue
 
                     rev = []
                     for t in tokens:
-                        t = t.encode('latin1', 'strict').decode('latin1')
+                        t = t.encode('utf-8', 'strict').decode('utf-8')
                         if len(t) > 0 and t in wordtoix:
                             rev.append(wordtoix[t])
                     captions.append(rev)
